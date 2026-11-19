@@ -114,14 +114,24 @@ const CONFIG = {
   // Cómo te presentas en la bienvenida (puede quedar vacío)
   organizador: "",
   titulo: "¡Cuéntame tus gustos!",
-  intro: "Es para el intercambio de regalos 🎁 Solo son 2 pasos rápidos para saber qué te gusta. ¡Responde con sinceridad! 😊"
+  intro: "Es para el intercambio de regalos 🎁 Son unas preguntas rápidas (menos de 2 minutos) para conocerte mejor. Responde con sinceridad, no hay respuestas incorrectas 😊"
 };
 
 /* Tipos: text | longtext | single | multi  (single/multi pueden tener "otro": true) */
 const PREGUNTAS = [
   { id:"nombre", tipo:"text", emoji:"👋", q:"¿Cómo te llamas?", placeholder:"Tu nombre", requerido:true },
-  { id:"gustos", tipo:"multi", emoji:"💝", q:"Elige 5 cosas que te gusten", hint:"Toca exactamente 5", max:5, min:5, requerido:true,
-    opciones:["Chocolates y dulces","Café o té","Libros","Música","Videojuegos","Series y películas","Tecnología y gadgets","Ropa","Zapatillas","Accesorios y joyas","Perfumes","Maquillaje y cuidado personal","Deporte / gym","Viajes y paseos","Cocinar","Plantas","Peluches","Arte y manualidades","Decoración","Mascotas","Juegos de mesa","Fotografía","Conciertos y eventos","Comida y restaurantes"] }
+  { id:"hobbies", tipo:"multi", emoji:"🎯", q:"¿Qué te gusta hacer en tu tiempo libre?", hint:"Elige todas las que quieras",
+    opciones:["Leer","Videojuegos","Deporte / gym","Cocinar","Música","Series y películas","Viajar","Manualidades / arte","Tecnología","Salir con amigos","Plantas / jardín","Mascotas"], otro:true },
+  { id:"tipo", tipo:"single", emoji:"🎁", q:"Si te hicieran un regalo, preferirías…", lista:true,
+    opciones:["Algo útil para el día a día","Una experiencia (salida, concierto, curso)","Ropa o accesorios","Algo para decorar mi espacio","Algo hecho a mano","¡Que sea sorpresa!"] },
+  { id:"estilo", tipo:"single", emoji:"✨", q:"¿Cómo describirías tu estilo?",
+    opciones:["Clásico","Deportivo","Moderno","Divertido","Minimalista","Bohemio","Elegante"] },
+  { id:"colores", tipo:"multi", emoji:"🎨", q:"¿Cuáles son tus colores favoritos?", hint:"Elige hasta 3", max:3, colores:true,
+    opciones:[["Negro","#222"],["Blanco","#fff"],["Gris","#9a9a9a"],["Rojo","#d93a30"],["Rosado","#f28cb1"],["Morado","#8a4fd3"],["Azul","#2f6fde"],["Celeste","#7cc7f2"],["Verde","#3aa65c"],["Amarillo","#f4cf3a"],["Naranja","#f2883a"],["Marrón","#8b5a3c"]] },
+  { id:"comida", tipo:"text", emoji:"🍫", q:"¿Tu comida, dulce o bebida favorita?", placeholder:"Ej: chocolate, café, alfajores…" },
+  { id:"tallas", tipo:"text", emoji:"👕", q:"¿Tu talla de polo y de zapatos?", hint:"Opcional, por si acaso 😉", placeholder:"Ej: polo M, zapatos 40" },
+  { id:"deseo", tipo:"longtext", emoji:"💭", q:"¿Hay algo que quieras o necesites desde hace tiempo?", placeholder:"Cuéntame…" },
+  { id:"no", tipo:"longtext", emoji:"🙅", q:"¿Qué NO te gustaría recibir?", hint:"Así evitamos fallar", placeholder:"Ej: perfumes, peluches…" }
 ];
 /* ==================================================== */
 
