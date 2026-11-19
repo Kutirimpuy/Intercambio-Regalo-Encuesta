@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Intercambio de regalos 🎁</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* ===== CONFIGURACIÓN RÁPIDA: cambia estos valores en el script de abajo ===== */
+  :root{
+    --bg:#fff7ef; --card:#ffffff; --ink:#2b1d16; --muted:#8a7568;
+    --accent:#e2553f; --accent-2:#f4a63a; --soft:#fde7da; --line:#f0dccd;
+    --ok:#2f9e6b;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:'Nunito',system-ui,sans-serif;color:var(--ink);
+    background:
+      radial-gradient(circle at 15% 10%, #ffe0cc 0 120px, transparent 121px),
+      radial-gradient(circle at 90% 85%, #ffecc4 0 160px, transparent 161px),
+      var(--bg);
+    min-height:100%;display:flex;justify-content:center;
+  }
+  .app{width:100%;max-width:460px;min-height:100vh;display:flex;flex-direction:column;padding:20px 18px 24px}
+  .top{display:flex;align-items:center;gap:12px;margin-bottom:18px;min-height:28px}
+  .back{border:none;background:var(--soft);color:var(--ink);width:36px;height:36px;border-radius:50%;font-size:18px;cursor:pointer;flex:none}
+  .back[hidden]{visibility:hidden;display:block}
+  .bar{flex:1;height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+  .bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent-2));border-radius:99px;transition:width .35s ease}
+  .count{font-size:13px;font-weight:700;color:var(--muted);min-width:38px;text-align:right}
+
+  .card{background:var(--card);border-radius:24px;padding:26px 22px;box-shadow:0 10px 30px -12px rgba(120,60,30,.25);flex:1;display:flex;flex-direction:column;animation:in .35s ease}
+  @keyframes in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  .emoji{font-size:44px;line-height:1;margin-bottom:14px}
+  h1,h2{font-family:'Fraunces',serif;line-height:1.15}
+  h1{font-size:30px;margin-bottom:10px}
+  h2{font-size:24px;margin-bottom:6px}
+  .hint{color:var(--muted);font-size:15px;margin-bottom:20px}
+  p.lead{color:var(--muted);font-size:16px;line-height:1.5;margin-bottom:22px}
+
+  .opts{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:16px}
+  .opt{border:2px solid var(--line);background:#fff;border-radius:99px;padding:11px 16px;font:700 15px 'Nunito',sans-serif;color:var(--ink);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent}
+  .opt.sel{background:var(--accent);border-color:var(--accent);color:#fff;transform:scale(1.03)}
+  .opt.list{width:100%;border-radius:16px;text-align:left;padding:14px 16px}
+  .swatch{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:8px;vertical-align:-2px;border:1px solid rgba(0,0,0,.12)}
+
+  textarea,input[type=text]{width:100%;border:2px solid var(--line);border-radius:16px;padding:14px 16px;font:600 16px 'Nunito',sans-serif;color:var(--ink);background:#fffdfb;outline:none;resize:none}
+  textarea:focus,input[type=text]:focus{border-color:var(--accent-2)}
+  textarea{min-height:110px}
+  .other{margin-top:4px}
+
+  .spacer{flex:1}
+  .btn{display:block;width:100%;border:none;border-radius:18px;padding:16px;font:800 17px 'Nunito',sans-serif;cursor:pointer;text-align:center;text-decoration:none;margin-top:12px}
+  .btn.primary{background:var(--accent);color:#fff;box-shadow:0 8px 18px -8px var(--accent)}
+  .btn.primary:disabled{opacity:.4;box-shadow:none;cursor:default}
+  .btn.wa{background:#25D366;color:#fff}
+  .btn.ghost{background:var(--soft);color:var(--ink)}
+  .skip{background:none;border:none;color:var(--muted);font:700 14px 'Nunito',sans-serif;margin-top:10px;cursor:pointer;text-decoration:underline}
+
+  .summary{background:var(--soft);border-radius:16px;padding:14px 16px;font-size:14px;line-height:1.55;max-height:260px;overflow:auto;margin:6px 0 4px;white-space:pre-wrap}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;padding:12px 18px;border-radius:99px;font-weight:700;font-size:14px;transition:transform .3s;z-index:9}
+  .toast.show{transform:translateX(-50%) translateY(0)}
+  .small{font-size:13px;color:var(--muted);margin-top:10px;text-align:center}
+
+  /* ===== Pantalla de carga ===== */
+  #loader{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 40%,#ff7a5c 0,#e2553f 45%,#b8342a 100%);color:#fff;overflow:hidden;transition:opacity .6s ease,visibility .6s}
+  #loader.hide{opacity:0;visibility:hidden}
+  .swap{position:relative;width:220px;height:150px;margin-bottom:10px}
+  .g{position:absolute;bottom:20px;width:72px;height:80px;filter:drop-shadow(0 8px 10px rgba(0,0,0,.25))}
+  .g.a{left:0;animation:goA 1.6s ease-in-out infinite alternate}
+  .g.b{right:0;animation:goB 1.6s ease-in-out infinite alternate}
+  @keyframes goA{0%,12%{transform:translate(0,0) rotate(0)}50%{transform:translate(74px,-62px) rotate(14deg)}88%,100%{transform:translate(148px,0) rotate(0)}}
+  @keyframes goB{0%,12%{transform:translate(0,0) rotate(0)}50%{transform:translate(-74px,14px) rotate(-10deg) scale(.92)}88%,100%{transform:translate(-148px,0) rotate(0)}}
+  .shadow{position:absolute;bottom:8px;left:10px;right:10px;height:10px;border-radius:50%;background:rgba(0,0,0,.18)}
+  #loader h1{font-family:'Fraunces',serif;font-size:34px;text-align:center;line-height:1.1;margin:0 20px 6px;text-shadow:0 3px 0 rgba(0,0,0,.12);animation:pop .7s cubic-bezier(.3,1.6,.5,1) both .2s}
+  #loader .sub{font-weight:700;opacity:.9;margin-bottom:22px;font-size:15px;min-height:20px}
+  @keyframes pop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+  .lbar{width:200px;height:10px;background:rgba(255,255,255,.25);border-radius:99px;overflow:hidden}
+  .lbar i{display:block;height:100%;width:0;background:#fff;border-radius:99px;animation:fill 3s ease-in-out forwards}
+  @keyframes fill{to{width:100%}}
+  .conf{position:absolute;top:-20px;width:9px;height:14px;border-radius:2px;animation:fall linear infinite}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+</style>
+</head>
+<body>
+<div id="loader">
+  <div class="swap"><div class="shadow"></div>
+    <div class="g a"><svg viewBox="0 0 72 80"><rect x="6" y="30" width="60" height="46" rx="6" fill="#f4cf3a"/><rect x="2" y="20" width="68" height="16" rx="5" fill="#f4cf3a" stroke="rgba(0,0,0,.08)"/><rect x="31" y="20" width="10" height="56" fill="#2f9e6b"/><path d="M36 20c-6-12-22-14-20-4 1 6 12 5 20 4zM36 20c6-12 22-14 20-4-1 6-12 5-20 4z" fill="#2f9e6b"/><circle cx="36" cy="20" r="5" fill="#2f9e6b"/></svg></div>
+    <div class="g b"><svg viewBox="0 0 72 80"><rect x="6" y="30" width="60" height="46" rx="6" fill="#3aa65c"/><rect x="2" y="20" width="68" height="16" rx="5" fill="#3aa65c" stroke="rgba(0,0,0,.08)"/><rect x="31" y="20" width="10" height="56" fill="#f4cf3a"/><path d="M36 20c-6-12-22-14-20-4 1 6 12 5 20 4zM36 20c6-12 22-14 20-4-1 6-12 5-20 4z" fill="#f4cf3a"/><circle cx="36" cy="20" r="5" fill="#f4cf3a"/></svg></div>
+  </div>
+  <h1>Intercambio<br>de regalos</h1>
+  <div class="sub" id="lsub">Envolviendo sorpresas…</div>
+  <div class="lbar"><i></i></div>
+</div>
+<div class="app">
+  <div class="top" id="top" style="visibility:hidden">
+    <button class="back" id="back" aria-label="Atrás">←</button>
+    <div class="bar"><i id="barFill"></i></div>
+    <div class="count" id="count"></div>
+  </div>
+  <div class="card" id="card"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================== CONFIGURA AQUÍ ================== */
+const CONFIG = {
+  // Tu número de WhatsApp con código de país, solo dígitos (Perú = 51). Ej: "51987654321".
+  // Si lo dejas vacío, WhatsApp le pedirá a la persona elegir a quién enviarlo.
+  telefono: "51979856675",
+  // Cómo te presentas en la bienvenida (puede quedar vacío)
+  organizador: "",
+  titulo: "¡Cuéntame tus gustos!",
+  intro: "Es para el intercambio de regalos 🎁 Solo son 2 pasos rápidos para saber qué te gusta. ¡Responde con sinceridad! 😊"
+};
+
+/* Tipos: text | longtext | single | multi  (single/multi pueden tener "otro": true) */
+const PREGUNTAS = [
+  { id:"nombre", tipo:"text", emoji:"👋", q:"¿Cómo te llamas?", placeholder:"Tu nombre", requerido:true },
+  { id:"gustos", tipo:"multi", emoji:"💝", q:"Elige 5 cosas que te gusten", hint:"Toca exactamente 5", max:5, min:5, requerido:true,
+    opciones:["Chocolates y dulces","Café o té","Libros","Música","Videojuegos","Series y películas","Tecnología y gadgets","Ropa","Zapatillas","Accesorios y joyas","Perfumes","Maquillaje y cuidado personal","Deporte / gym","Viajes y paseos","Cocinar","Plantas","Peluches","Arte y manualidades","Decoración","Mascotas","Juegos de mesa","Fotografía","Conciertos y eventos","Comida y restaurantes"] }
+];
+/* ==================================================== */
+
+const card = document.getElementById('card');
+const topBar = document.getElementById('top');
+const back = document.getElementById('back');
+const barFill = document.getElementById('barFill');
+const count = document.getElementById('count');
+let paso = -1;            // -1 = bienvenida, PREGUNTAS.length = final
+const resp = {};
+
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toast(t){const el=document.getElementById('toast');el.textContent=t;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2000)}
+
+function render(){
+  const N = PREGUNTAS.length;
+  topBar.style.visibility = (paso>=0 && paso<N) ? 'visible' : 'hidden';
+  back.hidden = paso<=0;
+  barFill.style.width = Math.max(0,(paso)/N*100)+'%';
+  count.textContent = paso>=0 && paso<N ? (paso+1)+'/'+N : '';
+  card.style.animation='none'; card.offsetHeight; card.style.animation='';
+  if(paso<0) return bienvenida();
+  if(paso>=N) return final();
+  pregunta(PREGUNTAS[paso]);
+}
+
+function bienvenida(){
+  card.innerHTML = `
+    <div class="emoji">🎉</div>
+    <h1>${esc(CONFIG.titulo)}</h1>
+    <p class="lead">${esc(CONFIG.intro)}${CONFIG.organizador?`<br><br>— ${esc(CONFIG.organizador)}`:''}</p>
+    <div class="spacer"></div>
+    <button class="btn primary" id="go">Empezar</button>`;
+  document.getElementById('go').onclick=()=>{paso=0;render()};
+}
+
+function pregunta(p){
+  let h = `<div class="emoji">${p.emoji||'❓'}</div><h2>${esc(p.q)}</h2>${p.hint?`<div class="hint">${esc(p.hint)}</div>`:'<div class="hint"></div>'}`;
+  const val = resp[p.id];
+  if(p.tipo==='text'){
+    h += `<input type="text" id="inp" placeholder="${esc(p.placeholder||'')}" value="${esc(val||'')}" autocomplete="off">`;
+  } else if(p.tipo==='longtext'){
+    h += `<textarea id="inp" placeholder="${esc(p.placeholder||'')}">${esc(val||'')}</textarea>`;
+  } else {
+    const sel = p.tipo==='multi' ? (val?.sel||[]) : (val?.sel?[val.sel]:[]);
+    h += `<div class="opts">` + p.opciones.map(o=>{
+      const [nom,col] = Array.isArray(o)?o:[o,null];
+      return `<button class="opt ${p.lista?'list':''} ${sel.includes(nom)?'sel':''}" data-v="${esc(nom)}">${col?`<span class="swatch" style="background:${col}"></span>`:''}${esc(nom)}</button>`;
+    }).join('') + `</div>`;
+    if(p.otro) h += `<input type="text" class="other" id="otro" placeholder="Otro (escríbelo)" value="${esc(val?.otro||'')}">`;
+  }
+  h += `<div class="spacer"></div><button class="btn primary" id="next">${paso===PREGUNTAS.length-1?'Terminar':'Siguiente'}</button>`;
+  if(!p.requerido) h += `<button class="skip" id="skip">Saltar</button>`;
+  card.innerHTML = h;
+
+  const next = document.getElementById('next');
+  const inp = document.getElementById('inp');
+  const otro = document.getElementById('otro');
+
+  function valido(){
+    if(!p.requerido) return true;
+    if(inp) return inp.value.trim().length>0;
+    const n=card.querySelectorAll('.opt.sel').length;
+    if(p.min) return n>=p.min;
+    return n>0;
+  }
+  function guardar(){
+    if(inp){ resp[p.id] = inp.value.trim(); return; }
+    const sel=[...card.querySelectorAll('.opt.sel')].map(b=>b.dataset.v);
+    resp[p.id] = p.tipo==='multi' ? {sel, otro: otro?otro.value.trim():''} : {sel: sel[0]||'', otro: otro?otro.value.trim():''};
+  }
+  next.disabled = !valido();
+  if(inp){
+    inp.oninput=()=>{next.disabled=!valido()};
+    inp.onkeydown=e=>{ if(e.key==='Enter' && p.tipo==='text' && valido()){ e.preventDefault(); next.click(); } };
+    setTimeout(()=>{ try{inp.focus()}catch(e){} },250);
+  }
+  card.querySelectorAll('.opt').forEach(b=>b.onclick=()=>{
+    if(p.tipo==='single'){
+      card.querySelectorAll('.opt').forEach(x=>x.classList.remove('sel'));
+      b.classList.add('sel');
+    } else {
+      if(!b.classList.contains('sel') && p.max && card.querySelectorAll('.opt.sel').length>=p.max){ toast('Máximo '+p.max); return; }
+      b.classList.toggle('sel');
+    }
+    next.disabled=!valido();
+    if(p.min){ const n=card.querySelectorAll('.opt.sel').length; card.querySelector('.hint').textContent = n+' de '+p.min+' elegidas'; }
+  });
+  next.onclick=()=>{guardar();paso++;render()};
+  const skip=document.getElementById('skip');
+  if(skip) skip.onclick=()=>{delete resp[p.id];paso++;render()};
+}
+
+function textoRespuestas(){
+  let t = `🎁 *Respuestas de la encuesta de regalos*\n\n`;
+  PREGUNTAS.forEach(p=>{
+    const v = resp[p.id];
+    let s = '';
+    if(typeof v==='string') s=v;
+    else if(v){ const arr=[].concat(v.sel||[]).filter(Boolean); if(v.otro) arr.push(v.otro); s=arr.join(', '); }
+    t += `*${p.q}*\n${s||'—'}\n\n`;
+  });
+  return t.trim();
+}
+
+function final(){
+  const txt = textoRespuestas();
+  const url = 'https://wa.me/' + (CONFIG.telefono||'') + '?text=' + encodeURIComponent(txt);
+  barFill.style.width='100%';
+  card.innerHTML = `
+    <div class="emoji">💌</div>
+    <h2>¡Gracias${resp.nombre?', '+esc(resp.nombre):''}!</h2>
+    <div class="hint">Toca el botón verde para enviar tus respuestas.</div>
+    <div class="summary">${esc(txt).replace(/\*/g,'')}</div>
+    <div class="spacer"></div>
+    <a class="btn wa" href="${url}" target="_blank" rel="noopener">Enviar por WhatsApp</a>
+    <button class="btn ghost" id="copy">Copiar respuestas</button>
+    <button class="skip" id="edit" style="align-self:center">Volver a editar</button>`;
+  document.getElementById('copy').onclick=async()=>{
+    try{ await navigator.clipboard.writeText(txt); toast('¡Copiado!'); }
+    catch(e){ toast('No se pudo copiar, selecciónalo a mano'); }
+  };
+  document.getElementById('edit').onclick=()=>{paso=0;render()};
+}
+
+back.onclick=()=>{ if(paso>0){paso--;render()} };
+/* ===== Pantalla de carga ===== */
+(function(){
+  const L=document.getElementById('loader');
+  const cols=['#fff','#f4cf3a','#3aa65c','#7cc7f2','#f28cb1'];
+  for(let i=0;i<34;i++){
+    const c=document.createElement('span');c.className='conf';
+    c.style.left=Math.random()*100+'%';
+    c.style.background=cols[i%cols.length];
+    c.style.animationDuration=(2.4+Math.random()*2.4)+'s';
+    c.style.animationDelay=(-Math.random()*4)+'s';
+    c.style.opacity=.6+Math.random()*.4;
+    L.appendChild(c);
+  }
+  const frases=['Envolviendo sorpresas…','Poniendo los lazos…','Mezclando nombres…','¡Casi listo!'];
+  let k=0;const sub=document.getElementById('lsub');
+  const t=setInterval(()=>{k++;if(k<frases.length)sub.textContent=frases[k];},800);
+  setTimeout(()=>{clearInterval(t);L.classList.add('hide');},3300);
+})();
+render();
+</script>
+</body>
+</html>
